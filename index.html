@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-time Chat</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.3.2/socket.io.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .chat-box {
+            max-width: 600px;
+            margin: 50px auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .chat-header {
+            background: #007bff;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-size: 20px;
+        }
+        .chat-body {
+            height: 400px;
+            overflow-y: auto;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+        }
+        .message {
+            max-width: 70%;
+            padding: 10px;
+            margin: 5px;
+            border-radius: 10px;
+            word-wrap: break-word;
+        }
+        .sent {
+            align-self: flex-end;
+            background: #007bff;
+            color: white;
+        }
+        .received {
+            align-self: flex-start;
+            background: #ddd;
+        }
+        .chat-footer {
+            display: flex;
+            padding: 15px;
+            background: #eee;
+        }
+        .chat-footer input {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            margin-right: 10px;
+        }
+        .chat-footer button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<div class="chat-box">
+    <div class="chat-header">Chat Room</div>
+    <div class="chat-body" id="chat">
+        <!-- Messages will appear here -->
+    </div>
+    <div class="chat-footer">
+        <input type="text" id="messageInput" placeholder="Type a message..." onkeypress="handleKeyPress(event)">
+        <button onclick="sendMessage()">Send</button>
+    </div>
+</div>
+
+<script>
+    var socket = io();
+    var username = "User-" + Math.floor(Math.random() * 1000); // Random username
+
+    socket.on("message", function(data) {
+        showMessage(data.message, data.sender);
+    });
+
+    function sendMessage() {
+        var messageInput = document.getElementById("messageInput");
+        var message = messageInput.value.trim();
+
+        if (message !== "") {
+            socket.send({ message: message, sender: username });
+            showMessage(message, "You"); // Show sender's message too
+            messageInput.value = "";
+        }
+    }
+
+    function showMessage(message, sender) {
+        var chat = document.getElementById("chat");
+        var messageElement = document.createElement("div");
+        messageElement.classList.add("message");
+        messageElement.textContent = sender + ": " + message;
+
+        if (sender === "You") {
+            messageElement.classList.add("sent");
+        } else {
+            messageElement.classList.add("received");
+        }
+
+        chat.appendChild(messageElement);
+        chat.scrollTop = chat.scrollHeight;
+    }
+
+    function handleKeyPress(event) {
+        if (event.key === "Enter") {
+            sendMessage();
+        }
+    }
+</script>
+
+</body>
+</html>
